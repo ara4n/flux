@@ -40,7 +40,7 @@ var ThreadStore = assign({}, EventEmitter.prototype, {
 
     if (!_currentID) {
       var allChrono = this.getAllChrono();
-      _currentID = allChrono[allChrono.length - 1].id;
+      _currentID = allChrono[0].id;
     }
 
     _threads[_currentID].lastMessage.isRead = true;
