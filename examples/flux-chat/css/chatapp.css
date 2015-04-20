@@ -12,7 +12,7 @@
 
 .chatapp {
   font-family: 'Muli', 'Helvetica Neue', helvetica, arial;
-  max-width: 760px;
+  max-width: 1000px;
   margin: 20px auto;
   overflow: hidden;
 }

@@ -51,6 +51,7 @@ var MessageSection = React.createClass({
 
   render: function() {
     var messageListItems = this.state.messages.map(getMessageListItem);
+    if (!this.state.thread) return (<div className="message-section"/>);
     return (
       <div className="message-section">
         <h3 className="message-thread-heading">{this.state.thread.name}</h3>
@@ -67,6 +68,7 @@ var MessageSection = React.createClass({
   },
 
   _scrollToBottom: function() {
+    if (!this.state.thread) return;
     var ul = this.refs.messageList.getDOMNode();
     ul.scrollTop = ul.scrollHeight;
   },

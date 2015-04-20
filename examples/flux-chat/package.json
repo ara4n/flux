@@ -11,9 +11,11 @@
     "react": "^0.12.0"
   },
   "devDependencies": {
+    "browser-request": "^0.3.3",
     "browserify": "^6.2.0",
     "envify": "^3.0.0",
     "jest-cli": "~0.1.17",
+    "matrix-js-sdk": "0.0.2",
     "reactify": "^0.15.2",
     "uglify-js": "~2.4.15",
     "watchify": "^2.1.1"

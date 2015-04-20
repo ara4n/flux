@@ -18,9 +18,11 @@ var ChatWebAPIUtils = require('./utils/ChatWebAPIUtils');
 var React = require('react');
 window.React = React; // export for http://fb.me/react-devtools
 
-ChatExampleData.init(); // load example data into localstorage
+//ChatExampleData.init(); // load example data into localstorage
 
-ChatWebAPIUtils.getAllMessages();
+ChatWebAPIUtils.init(function () {
+  ChatWebAPIUtils.getAllMessages();
+});
 
 React.render(
     <ChatApp />,

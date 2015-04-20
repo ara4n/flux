@@ -10,6 +10,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+var ChatWebAPIUtils = require('./ChatWebAPIUtils');
+
 module.exports = {
 
   convertRawMessage: function(rawMessage, currentThreadID) {
@@ -28,7 +30,7 @@ module.exports = {
     return {
       id: 'm_' + timestamp,
       threadID: currentThreadID,
-      authorName: 'Bill', // hard coded for the example
+      authorName: ChatWebAPIUtils.getUserId(),
       date: new Date(timestamp),
       text: text,
       isRead: true

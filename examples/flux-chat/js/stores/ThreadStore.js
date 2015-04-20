@@ -83,9 +83,9 @@ var ThreadStore = assign({}, EventEmitter.prototype, {
     }
     orderedThreads.sort(function(a, b) {
       if (a.lastMessage.date < b.lastMessage.date) {
-        return -1;
-      } else if (a.lastMessage.date > b.lastMessage.date) {
         return 1;
+      } else if (a.lastMessage.date > b.lastMessage.date) {
+        return -1;
       }
       return 0;
     });
@@ -112,6 +112,11 @@ ThreadStore.dispatchToken = ChatAppDispatcher.register(function(action) {
       ThreadStore.emitChange();
       break;
 
+    case ActionTypes.RECEIVE_RAW_CREATED_MESSAGE:
+      ThreadStore.init([ action.rawMessage ]);
+      ThreadStore.emitChange();
+      break;
+    
     case ActionTypes.RECEIVE_RAW_MESSAGES:
       ThreadStore.init(action.rawMessages);
       ThreadStore.emitChange();
