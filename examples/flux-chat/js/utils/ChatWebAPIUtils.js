@@ -101,19 +101,26 @@ module.exports = {
   init: function(callback) {
       sdk = require("matrix-js-sdk");
       sdk.request(require("browser-request"));    
+            
       client = sdk.createClient(homeserverUrl);
-      userId = prompt("Enter your matrix user id");
-      var password = prompt("Enter your matrix password");
-      client.loginWithPassword(userId, password, function(err, data) {
-        if (err) {
-          alert(JSON.stringify(err));
-        }
-        // XXX: surely we shouldn't have to do this?
-        client.credentials.accessToken = data.access_token;
-        client.credentials.userId = data.user_id;
-        
-        callback();
-      });
+      var credentials = JSON.parse(localStorage.getItem('credentials'));
+      if (!credentials || !credentials.accessToken) {
+        userId = prompt("Enter your matrix user id");
+        var password = prompt("Enter your matrix password (WARNING: your typing will be visible)");
+        client.loginWithPassword(userId, password, function(err, data) {
+          if (err) {
+            alert(JSON.stringify(err));
+          }
+          client.credentials.accessToken = data.access_token;
+          client.credentials.userId = data.user_id;
+          localStorage.setItem('credentials', JSON.stringify(client.credentials));
+          callback();
+        });
+      }
+      else {
+        client.credentials.accessToken = credentials.accessToken;
+        client.credentials.userId = credentials.userId;
+      }
   },
   
   getAllMessages: function() {
