@@ -31,6 +31,7 @@ function _calcRoomName(state) {
   var members = [];
   var aliases = [];
   var roomName = null;
+  if (!state) return "Unknown";
   for (var j = 0; j < state.length; j++) {
     var stateEvent = state[j];
     if (stateEvent.type === "m.room.name") {
