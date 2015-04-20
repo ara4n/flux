@@ -117,13 +117,13 @@ module.exports = {
           client.credentials.accessToken = data.access_token;
           client.credentials.userId = data.user_id;
           localStorage.setItem('credentials', JSON.stringify(client.credentials));
-          callback();
         });
       }
       else {
         client.credentials.accessToken = credentials.accessToken;
         client.credentials.userId = credentials.userId;
       }
+      callback();
   },
   
   getAllMessages: function() {
