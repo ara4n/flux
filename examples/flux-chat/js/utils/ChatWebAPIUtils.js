@@ -53,6 +53,9 @@ function _calcRoomName(state) {
       if (members.length == 1) {
         roomName = members[0];
       }
+      else if (members.length == 2) {
+        roomName = members[0] + " and " + members[1];
+      }
       else {
         roomName = members[0] + " and " + (members.length-1) + " others";
       }
