@@ -22,133 +22,61 @@ var ChatServerActionCreators = require('../actions/ChatServerActionCreators');
 var sdk;
 var client;
 var homeserverUrl = "https://matrix.org";
-var userId;
-var roomName = {};
-var fromToken;
-
-function _calcRoomName(state) {
-  // XXX: this should all be provided by the Server
-  var members = [];
-  var aliases = [];
-  var roomName = null;
-  if (!state) return "Unknown";
-  for (var j = 0; j < state.length; j++) {
-    var stateEvent = state[j];
-    if (stateEvent.type === "m.room.name") {
-      roomName = stateEvent.content.name;
-    }
-    if (stateEvent.type === "m.room.aliases") {
-      aliases = stateEvent.content.aliases;
-    }
-    if (stateEvent.type === "m.room.member" && stateEvent.user_id != userId) {
-      members.push(stateEvent.content.displayname || stateEvent.user_id);
-    }
-  }
-    
-  if (!roomName) {
-    if (aliases.length) {
-      roomName = aliases[0];
-    }
-    else {
-      if (members.length == 1) {
-        roomName = members[0];
-      }
-      else if (members.length == 2) {
-        roomName = members[0] + " and " + members[1];
-      }
-      else {
-        roomName = members[0] + " and " + (members.length-1) + " others";
-      }
-    }
-  }
-  
-  return roomName;
-}
-
-function _processEvents(events, echo, rawMessages) {
-  for (var j = 0; j < events.length; j++) {
-    var event = events[j];
-    if (event.type !== "m.room.message") continue;
-    if (!echo && event.user_id === userId) continue; // XXX: local echo hack
-    if (!roomName[event.room_id]) roomName[event.room_id] = _calcRoomName(events);
-    var message = {
-      id: event.event_id,
-      threadID: event.room_id,
-      threadName: roomName[event.room_id],
-      authorName: event.user_id,
-      text: event.content.body,
-      timestamp: event.origin_server_ts,
-    };
-    //console.log(JSON.stringify(message));
-    rawMessages.push(message);
-  }
-}
-
-function _pollForMessages() {
-  client.eventStream(fromToken, 30000, function (err, data) {
-    if (err) {
-      console.error("err %s", JSON.stringify(err));
-    }
-    else {
-      fromToken = data.end;
-      var rawMessages = [];
-      _processEvents(data.chunk, false, rawMessages);
-      ChatServerActionCreators.receiveAll(rawMessages);
-      _pollForMessages();
-    }
-  });
-}  
 
 module.exports = {
 
   init: function(callback) {
-      sdk = require("matrix-js-sdk");
-      sdk.request(require("browser-request"));    
-            
-      client = sdk.createClient(homeserverUrl);
-      var credentials = JSON.parse(localStorage.getItem('credentials'));
-      if (!credentials || !credentials.accessToken) {
-        userId = prompt("Enter your matrix user id");
-        var password = prompt("Enter your matrix password (WARNING: your typing will be visible)");
-        client.loginWithPassword(userId, password, function(err, data) {
-          if (err) {
-            alert(JSON.stringify(err));
-          }
-          client.credentials.accessToken = data.access_token;
-          client.credentials.userId = data.user_id;
-          localStorage.setItem('credentials', JSON.stringify(client.credentials));
-          callback();
-        });
-      }
-      else {
-        client.credentials.accessToken = credentials.accessToken;
-        client.credentials.userId = credentials.userId;
-        callback();
-      }
-  },
-  
-  getAllMessages: function() {
-    var rawMessages = [];
+    sdk = require("matrix-js-sdk");
+    sdk.request(require("browser-request"));
 
-    client.initialSync(12, function (err, data) {
+    client = sdk.createClient(homeserverUrl, {}, new sdk.MatrixInMemoryStore());
+    var credentials = JSON.parse(localStorage.getItem('credentials'));
+    if (!credentials || !credentials.accessToken) {
+      var userId = prompt("Enter your matrix user id");
+      var password = prompt("Enter your matrix password (WARNING: your typing will be visible)");
+      client.loginWithPassword(userId, password, function(err, data) {
+        if (err) {
+          alert(JSON.stringify(err));
+        }
+        client.credentials.accessToken = data.access_token;
+        client.credentials.userId = data.user_id;
+        localStorage.setItem('credentials', JSON.stringify(client.credentials));
+        callback();
+      });
+    } else {
+      client.credentials.accessToken = credentials.accessToken;
+      client.credentials.userId = credentials.userId;
+      callback();
+    }
+  },
+
+  getAllMessages: function() {
+    client.startClient(function(err, events, live) {
+      var rawMessages = [];
       if (err) {
         console.error("err %s", JSON.stringify(err));
+      } else {
+        for (var i = 0; i < events.length; i++) {
+          var event = events[i].event;
+          if (event.type !== "m.room.message") continue;
+          if (live && event.user_id === client.credentials.userId) continue; // XXX: local echo hack
+          var message = {
+            id: event.event_id,
+            threadID: event.room_id,
+            threadName: client.getFriendlyRoomName(event.room_id),
+            authorName: event.user_id,
+            text: event.content.body,
+            timestamp: event.origin_server_ts,
+          };
+          rawMessages.push(message);
+        }
       }
-      else {
-        fromToken = data.end;
-        for (var i = 0; i < data.rooms.length; i++) {
-          roomName[data.rooms[i].room_id] = _calcRoomName(data.rooms[i].state);
-          _processEvents(data.rooms[i].messages.chunk, true, rawMessages);
-        }        
-        ChatServerActionCreators.receiveAll(rawMessages);        
-
-        _pollForMessages();
-      }
-    });
+      ChatServerActionCreators.receiveAll(rawMessages);
+    }, 12);
   },
-  
+
   getUserId: function() {
-    return userId;
+    return client.credentials.userId;
   },
   
   createMessage: function(message) {
@@ -159,7 +87,7 @@ module.exports = {
     var createdMessage = {
       id: id,
       threadID: threadID,
-      threadName: roomName[threadID],
+      threadName: client.getFriendlyRoomName(threadID),
       authorName: message.authorName,
       text: message.text,
       timestamp: timestamp
