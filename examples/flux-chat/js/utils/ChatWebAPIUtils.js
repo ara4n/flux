@@ -123,6 +123,7 @@ module.exports = {
       else {
         client.credentials.accessToken = credentials.accessToken;
         client.credentials.userId = credentials.userId;
+        userId = credentials.userId;
         callback();
       }
   },
