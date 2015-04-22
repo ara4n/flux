@@ -97,9 +97,8 @@ module.exports = {
       if (err) {
         console.error("err %s", JSON.stringify(err));
       }
-      else {
-        ChatServerActionCreators.receiveCreatedMessage(createdMessage);
-      }
     });
+
+    ChatServerActionCreators.receiveCreatedMessage(createdMessage);
   }
 };
