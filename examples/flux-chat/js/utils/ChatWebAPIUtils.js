@@ -12,13 +12,6 @@
 
 var ChatServerActionCreators = require('../actions/ChatServerActionCreators');
 
-// !!! Please Note !!!
-// We are using localStorage as an example, but in a real-world scenario, this
-// would involve XMLHttpRequest, or perhaps a newer client-server protocol.
-// The function signatures below might be similar to what you would build, but
-// the contents of the functions are just trying to simulate client-server
-// communication and server-side processing.
-
 var sdk;
 var client;
 var homeserverUrl = "https://matrix.org";
@@ -64,7 +57,7 @@ module.exports = {
             id: event.event_id,
             threadID: event.room_id,
             threadName: client.getFriendlyRoomName(event.room_id),
-            authorName: event.user_id,
+            authorName: client.getFriendlyDisplayName(event.user_id, event.room_id),
             text: event.content.body,
             timestamp: event.origin_server_ts,
           };
