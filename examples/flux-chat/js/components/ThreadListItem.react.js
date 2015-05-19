@@ -38,7 +38,7 @@ var ThreadListItem = React.createClass({
           {lastMessage.date.toLocaleTimeString()}
         </div>
         <div className="thread-last-message">
-          &lt;lastMessage.authorName&gt; {lastMessage.text}
+          &lt;{lastMessage.authorName}&gt; {lastMessage.text}
         </div>
       </li>
     );
