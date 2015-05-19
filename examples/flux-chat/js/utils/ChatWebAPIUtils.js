@@ -16,6 +16,15 @@ var sdk;
 var client;
 var homeserverUrl = "https://matrix.org";
 
+function _getBody(event) {
+    if (event.content.msgtype === "m.emote") {
+      return ("* " + client.getFriendlyDisplayName(event.user_id, event.room_id) + " " + event.content.body);
+    }
+    else {
+      return event.content.body;
+    }    
+}
+
 module.exports = {
 
   init: function(callback) {
@@ -56,9 +65,10 @@ module.exports = {
           var message = {
             id: event.event_id,
             threadID: event.room_id,
+            // XXX: should these be event.getHelper() methods instead?
             threadName: client.getFriendlyRoomName(event.room_id),
             authorName: client.getFriendlyDisplayName(event.user_id, event.room_id),
-            text: event.content.body,
+            text: _getBody(event),
             timestamp: event.origin_server_ts,
           };
           rawMessages.push(message);
